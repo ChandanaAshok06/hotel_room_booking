@@ -418,28 +418,50 @@ public class Main {
         try (Connection conn = DBConnection.getConnection()) {
             if (choice == 1) {
                 System.out.print("Enter your email: ");
-                String email = sc.nextLine();
+                String email = sc.nextLine().trim();
                 System.out.print("Enter password: ");
-                String password = sc.nextLine();
+                String password = sc.nextLine().trim();
+                if(email.isEmpty() || password.isEmpty()) {
+                    System.out.println("Email or password cannot be empty!");
+                    return -1; // stop login
+                }
                 String sql = "SELECT id FROM customers WHERE email=? AND password=?";
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ps.setString(1, email);
                 ps.setString(2, password);
                 ResultSet rs = ps.executeQuery();
-                if (rs.next()) return rs.getInt("id");
+                if (rs.next())
+                    return rs.getInt("id");
                 System.out.println("Invalid email/password!");
-            } else if (choice == 2) {
+            }
+            else if (choice == 2) {
                 System.out.print("Enter name: "); String name = sc.nextLine();
                 System.out.print("Enter phone: "); String phone = sc.nextLine();
+                if (!phone.matches("\\d{10}")) {
+                    System.out.println("Phone must be exactly 10 digits!");
+                    return -1;
+                }
                 System.out.print("Enter email: "); String email = sc.nextLine();
                 System.out.print("Enter password: "); String password = sc.nextLine();
+                // Strong password validation
+                if (!password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).{8,}$")) {
+                    System.out.println("Password must be at least 8 characters and include uppercase, lowercase, number, and special character!");
+                    return -1;
+                }
 
-                Customer customer = new Customer(name, phone, email);
+                if (name == null || name.trim().isEmpty() ||
+                        email == null || email.trim().isEmpty() ||
+                        password == null || password.trim().isEmpty()) {
+                    System.out.println("All fields are required!");
+                    return -1;
+                }
+
+                Customer customer = new Customer(name, Long.parseLong(phone), email);
 
                 String sql = "INSERT INTO customers (name, phone, email, password) VALUES (?, ?, ?, ?)";
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
                 ps.setString(1, customer.getName());
-                ps.setString(2, customer.getPhone());
+                ps.setLong(2, customer.getPhone());
                 ps.setString(3, customer.getEmail());
                 ps.setString(4, password);
                 ps.executeUpdate();
