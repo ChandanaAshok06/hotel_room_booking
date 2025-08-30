@@ -1,5 +1,5 @@
 package com.hotelbooking;
-
+// to access database use hotel_booking;
 import java.sql.*;
 import java.util.Scanner;
 
